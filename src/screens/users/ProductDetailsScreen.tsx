@@ -19,8 +19,14 @@ const mockProduct = {
   supplier: "Supplier Inc.",
   image: "https://via.placeholder.com/150",
 };
-
-export default function ProductDetailsScreen({ route, navigation }) {
+interface paramsCommon {
+  route: string;
+  navigation: any;
+}
+export default function ProductDetailsScreen({
+  route,
+  navigation,
+}: paramsCommon) {
   const { productId, barcode } = route.params;
   const [quantity, setQuantity] = useState("");
 
@@ -93,7 +99,7 @@ function InfoItem({ icon, label, value }) {
 }
 
 const styles = StyleSheet.create({
-  ...commonStyles,
+//   ...commonStyles,
   productImage: {
     width: 200,
     height: 200,
