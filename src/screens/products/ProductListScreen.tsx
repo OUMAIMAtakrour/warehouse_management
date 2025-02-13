@@ -9,6 +9,7 @@ import {
   TextInput,
   ActivityIndicator,
 } from "react-native";
+import ProductCard from "../../components/ProductCard";
 import { Feather } from "@expo/vector-icons";
 import { colors, commonStyles } from "../../../assets/style/common";
 import { Product, Stock } from "../../types";
@@ -77,40 +78,11 @@ export default function ProductListScreen({ navigation }) {
   });
 
   const renderItem = ({ item }: { item: Product }) => {
-    const totalQuantity = getTotalQuantity(item.stocks);
-    const isOutOfStock = totalQuantity === 0;
-    const isLowStock = totalQuantity > 0 && totalQuantity < 10;
-console.log("test",item.image);
+    // const totalQuantity = getTotalQuantity(item.stocks);
 
-    return (
-      <TouchableOpacity
-        style={[
-          styles.productItem,
-          isOutOfStock && styles.outOfStock,
-          isLowStock && styles.lowStock,
-        ]}
-        onPress={() =>
-          navigation.navigate("ProductDetails", { productId: item.id })
-        }
-      >
-        <View style={styles.productInfo}>
-          <Image
-            source={{ uri: item.image }}
-            style={{ height: 100, width: 100 }}
-          />
-          <Text style={styles.productName}>{item.name}</Text>
-          <Text style={styles.productType}>{item.type}</Text>
-          <Text style={styles.productSupplier}>Supplier: {item.supplier}</Text>
-          {renderStockInfo(item.stocks)}
-        </View>
-        <View style={styles.productStats}>
-          <Text style={styles.productPrice}>${item.price.toFixed(2)}</Text>
-          <Text style={styles.editedBy}>
-            Last edited: {new Date(item.editedBy.at).toLocaleDateString()}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    );
+    console.log("test", item.image);
+
+    return <ProductCard item={item} navigation={navigation}></ProductCard>;
   };
 
   if (loading) {
