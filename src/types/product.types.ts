@@ -25,8 +25,14 @@ export interface Product {
   sold?: number;
   supplier: string;
   image: string;
-  stocks: [];
+  stocks: Stock[];
   editedBy: History;
+}
+
+export interface CreateStcokDto {
+  name: string;
+  quantity: number;
+  localisation: Location;
 }
 
 export interface CreateProductDTO {

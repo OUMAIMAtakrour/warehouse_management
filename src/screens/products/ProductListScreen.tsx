@@ -1,94 +1,214 @@
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
   FlatList,
   TouchableOpacity,
   StyleSheet,
+  Image,
   TextInput,
+  ActivityIndicator,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { colors, commonStyles } from "../../../assets/style/common";
-
-const mockProducts = [
-  { id: "1", name: "Product 1", type: "Type A", price: 10.99, quantity: 50 },
-  { id: "2", name: "Product 2", type: "Type B", price: 15.99, quantity: 5 },
-  { id: "3", name: "Product 3", type: "Type A", price: 8.99, quantity: 0 },
-];
+import { Product, Stock } from "../../types";
+import { ProductService } from "../../services/product.service";
 
 export default function ProductListScreen({ navigation }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("name");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredProducts = mockProducts.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      const response = await ProductService.getAllProducts();
+      setProducts(response.data);
+      setError(null);
+    } catch (err) {
+      setError("Failed to fetch products");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getTotalQuantity = (stocks: Stock[]) => {
+    return stocks.reduce((sum, stock) => sum + stock.quantity, 0);
+  };
+
+  const renderStockInfo = (stocks: Stock[]) => {
+    const totalQuantity = getTotalQuantity(stocks);
+    const stockLocations = stocks
+      .map((stock) => `${stock.localisation.city}: ${stock.quantity}`)
+      .join("\n");
+
+    return (
+      <View>
+        <Text style={styles.totalQuantity}>Total Qty: {totalQuantity}</Text>
+        <Text style={styles.stockLocations}>{stockLocations}</Text>
+      </View>
+    );
+  };
+
+  const filteredProducts = products.filter((product) => {
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      product.name.toLowerCase().includes(searchLower) ||
+      product.type.toLowerCase().includes(searchLower) ||
+      product.supplier.toLowerCase().includes(searchLower) ||
+      product.price.toString().includes(searchLower)
+    );
+  });
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortBy === "name") return a.name.localeCompare(b.name);
     if (sortBy === "price") return a.price - b.price;
-    if (sortBy === "quantity") return b.quantity - a.quantity;
+    if (sortBy === "quantity") {
+      return getTotalQuantity(b.stocks) - getTotalQuantity(a.stocks);
+    }
     return 0;
   });
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={[
-        styles.productItem,
-        item.quantity === 0 && styles.outOfStock,
-        item.quantity > 0 && item.quantity < 10 && styles.lowStock,
-      ]}
-      onPress={() =>
-        navigation.navigate("ProductDetails", { productId: item.id })
-      }
-    >
-      <View style={styles.productInfo}>
-        <Text style={styles.productName}>{item.name}</Text>
-        <Text style={styles.productType}>{item.type}</Text>
+  const renderItem = ({ item }: { item: Product }) => {
+    const totalQuantity = getTotalQuantity(item.stocks);
+    const isOutOfStock = totalQuantity === 0;
+    const isLowStock = totalQuantity > 0 && totalQuantity < 10;
+console.log("test",item.image);
+
+    return (
+      <TouchableOpacity
+        style={[
+          styles.productItem,
+          isOutOfStock && styles.outOfStock,
+          isLowStock && styles.lowStock,
+        ]}
+        onPress={() =>
+          navigation.navigate("ProductDetails", { productId: item.id })
+        }
+      >
+        <View style={styles.productInfo}>
+          <Image
+            source={{ uri: item.image }}
+            style={{ height: 100, width: 100 }}
+          />
+          <Text style={styles.productName}>{item.name}</Text>
+          <Text style={styles.productType}>{item.type}</Text>
+          <Text style={styles.productSupplier}>Supplier: {item.supplier}</Text>
+          {renderStockInfo(item.stocks)}
+        </View>
+        <View style={styles.productStats}>
+          <Text style={styles.productPrice}>${item.price.toFixed(2)}</Text>
+          <Text style={styles.editedBy}>
+            Last edited: {new Date(item.editedBy.at).toLocaleDateString()}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
-      <View style={styles.productStats}>
-        <Text style={styles.productPrice}>${item.price.toFixed(2)}</Text>
-        <Text style={styles.productQuantity}>Qty: {item.quantity}</Text>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={fetchProducts}>
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
       </View>
-    </TouchableOpacity>
-  );
+    );
+  }
 
   return (
     <View style={styles.container}>
       <TextInput
         style={styles.searchInput}
-        placeholder="Search products"
+        placeholder="Search by name, type, supplier or price..."
         value={searchQuery}
         onChangeText={setSearchQuery}
       />
       <View style={styles.sortButtons}>
         <TouchableOpacity
           onPress={() => setSortBy("name")}
-          style={styles.sortButton}
+          style={[
+            styles.sortButton,
+            sortBy === "name" && styles.activeSortButton,
+          ]}
         >
-          <Feather name="type" size={16} color={colors.primary} />
-          <Text style={styles.sortButtonText}>Name</Text>
+          <Feather
+            name="type"
+            size={16}
+            color={sortBy === "name" ? colors.white : colors.primary}
+          />
+          <Text
+            style={[
+              styles.sortButtonText,
+              sortBy === "name" && styles.activeSortButtonText,
+            ]}
+          >
+            Name
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => setSortBy("price")}
-          style={styles.sortButton}
+          style={[
+            styles.sortButton,
+            sortBy === "price" && styles.activeSortButton,
+          ]}
         >
-          <Feather name="dollar-sign" size={16} color={colors.primary} />
-          <Text style={styles.sortButtonText}>Price</Text>
+          <Feather
+            name="dollar-sign"
+            size={16}
+            color={sortBy === "price" ? colors.white : colors.primary}
+          />
+          <Text
+            style={[
+              styles.sortButtonText,
+              sortBy === "price" && styles.activeSortButtonText,
+            ]}
+          >
+            Price
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity
           onPress={() => setSortBy("quantity")}
-          style={styles.sortButton}
+          style={[
+            styles.sortButton,
+            sortBy === "quantity" && styles.activeSortButton,
+          ]}
         >
-          <Feather name="package" size={16} color={colors.primary} />
-          <Text style={styles.sortButtonText}>Quantity</Text>
+          <Feather
+            name="package"
+            size={16}
+            color={sortBy === "quantity" ? colors.white : colors.primary}
+          />
+          <Text
+            style={[
+              styles.sortButtonText,
+              sortBy === "quantity" && styles.activeSortButtonText,
+            ]}
+          >
+            Quantity
+          </Text>
         </TouchableOpacity>
       </View>
       <FlatList
         data={sortedProducts}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         style={styles.list}
       />
     </View>
@@ -97,6 +217,30 @@ export default function ProductListScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   ...commonStyles,
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: colors.background,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
+    color: colors.danger,
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: colors.white,
+    fontWeight: "bold",
+  },
   searchInput: {
     ...commonStyles.input,
     marginBottom: 10,
@@ -114,10 +258,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 20,
   },
+  activeSortButton: {
+    backgroundColor: colors.primary,
+  },
   sortButtonText: {
     marginLeft: 5,
     color: colors.primary,
     fontWeight: "bold",
+  },
+  activeSortButtonText: {
+    color: colors.white,
   },
   list: {
     flex: 1,
@@ -144,6 +294,11 @@ const styles = StyleSheet.create({
     color: colors.text,
     opacity: 0.7,
   },
+  productSupplier: {
+    color: colors.text,
+    opacity: 0.7,
+    fontSize: 12,
+  },
   productStats: {
     alignItems: "flex-end",
   },
@@ -151,14 +306,26 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: colors.primary,
   },
-  productQuantity: {
+  totalQuantity: {
+    color: colors.text,
+    fontWeight: "bold",
+    marginTop: 4,
+  },
+  stockLocations: {
     color: colors.text,
     opacity: 0.7,
+    fontSize: 12,
+  },
+  editedBy: {
+    fontSize: 12,
+    color: colors.text,
+    opacity: 0.7,
+    marginTop: 4,
   },
   outOfStock: {
-    backgroundColor: colors.danger,
+    backgroundColor: colors.danger + "20",
   },
   lowStock: {
-    backgroundColor: colors.warning,
+    backgroundColor: colors.warning + "20",
   },
 });
