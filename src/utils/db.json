@@ -107,6 +107,76 @@
         "warehouseManId": "1333",
         "at": "2025-02-14T12:58:20.190Z"
       }
+    },
+    {
+      "id": "5a16",
+      "name": "Test",
+      "type": "Ffgg",
+      "barcode": "1739543426273",
+      "price": 23,
+      "supplier": "Thh",
+      "image": "",
+      "stocks": [
+        {
+          "id": [
+            {
+              "quantity": 23,
+              "location": "Oujda"
+            }
+          ]
+        }
+      ],
+      "sold": 0,
+      "editedBy": {
+        "warehouseManId": "1333",
+        "at": "2025-02-14T14:30:26.439Z"
+      }
+    },
+    {
+      "id": "ac5b",
+      "name": "Noura",
+      "type": "Bekaya",
+      "barcode": "1739546413888",
+      "price": 0,
+      "image": "file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540anonymous%252Fwarehouse-ec399f1b-c33b-47b9-a030-4d190a287f6c/ImagePicker/df8acba5-a75b-4cc8-92e4-52fcc8ddf1ef.jpeg",
+      "stocks": [
+        {
+          "id": [
+            {
+              "quantity": 0,
+              "location": 1999
+            }
+          ]
+        }
+      ],
+      "sold": 0,
+      "editedBy": {
+        "warehouseManId": "1333",
+        "at": "2025-02-14T15:20:14.413Z"
+      }
+    },
+    {
+      "id": "49d3",
+      "name": "CodeX",
+      "type": "Chabiba",
+      "barcode": "1739546776226",
+      "price": 999999999,
+      "image": "file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540anonymous%252Fwarehouse-ec399f1b-c33b-47b9-a030-4d190a287f6c/ImagePicker/9fc54921-f3b0-4699-8e81-5d45bad55268.jpeg",
+      "stocks": [
+        {
+          "id": [
+            {
+              "quantity": 0,
+              "location": 1999
+            }
+          ]
+        }
+      ],
+      "sold": 0,
+      "editedBy": {
+        "warehouseManId": "1333",
+        "at": "2025-02-14T15:26:16.653Z"
+      }
     }
   ],
   "warehousemans": [
