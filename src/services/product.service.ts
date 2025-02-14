@@ -19,4 +19,17 @@ export const ProductService = {
       throw error;
     }
   },
+
+   getProductById: async (id: string): Promise<ApiResponse<Product>> => {
+      try {
+        const response = await apiClient.get<Product>(`/products/${id}`);
+        return {
+          data: response.data,
+          status: response.status,
+        };
+      } catch (error) {
+        console.error(`Error fetching product with id ${id}:`, error);
+        throw error;
+      }
+    },
 };
