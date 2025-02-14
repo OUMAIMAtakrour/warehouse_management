@@ -1,3 +1,10 @@
+import { apiClient } from "../api/client";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  Product,
+  CreateProductDTO,
+  ApiResponse,
+} from "../../types/product.types";
 
 import { useState } from "react";
 import {
@@ -7,9 +14,11 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Alert,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { colors, commonStyles } from "../../../assets/style/common";
+import { ProductService } from "../../services/product.service";
 
 export default function AddProductScreen({ navigation }) {
   const [name, setName] = useState("");
@@ -19,16 +28,29 @@ export default function AddProductScreen({ navigation }) {
   const [initialQuantity, setInitialQuantity] = useState("");
   const [warehouse, setWarehouse] = useState("");
 
-  const handleAddProduct = () => {
-    console.log("Adding new product:", {
-      name,
-      type,
-      price,
-      supplier,
-      initialQuantity,
-      warehouse,
-    });
-    navigation.goBack();
+  const handleAddProduct = async () => {
+    try {
+      const productData = {
+        name,
+        type,
+        barcode: `${Date.now()}`,
+        price: parseFloat(price),
+        supplier,
+        image: "", 
+        stocks: [{ quantity: parseInt(initialQuantity), location: warehouse }],
+      };
+
+      const response = await ProductService.createProduct(productData);
+      if (response.status === 201) {
+        Alert.alert("Success", "Product added successfully");
+        navigation.goBack();
+      } else {
+        Alert.alert("Error", response.message || "Failed to add product");
+      }
+    } catch (error) {
+      console.error("Error adding product:", error);
+      Alert.alert("Error", "An error occurred while adding the product");
+    }
   };
 
   return (
@@ -109,9 +131,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 15,
   },
-  inputIcon: {
-    marginRight: 10,
-  },
+  inputIcon: { marginRight: 10 },
   input: {
     flex: 1,
     height: 40,
@@ -124,8 +144,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  buttonText: {
-    ...commonStyles.buttonText,
-    marginLeft: 10,
-  },
+  buttonText: { ...commonStyles.buttonText, marginLeft: 10 },
 });

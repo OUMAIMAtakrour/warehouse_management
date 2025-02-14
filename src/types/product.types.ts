@@ -29,7 +29,7 @@ export interface Product {
   editedBy: History;
 }
 
-export interface CreateStcokDto {
+export interface CreateStockDto {
   name: string;
   quantity: number;
   localisation: Location;
@@ -40,7 +40,7 @@ export interface CreateProductDTO {
   type: string;
   barcode: string;
   price: number;
-  solde?: number;
+  sold?: number;
   supplier: string;
   image: string;
   stocks: Stock[];

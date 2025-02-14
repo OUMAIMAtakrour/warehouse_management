@@ -189,7 +189,7 @@ export default function ProductDetailsScreen({
           keyboardType="numeric"
           value={quantity}
           onChangeText={setQuantity}
-          placeholderTextColor={colors.textSecondary}
+          placeholderTextColor={colors.secondary}
         />
         <View style={styles.buttonContainer}>
           <TouchableOpacity

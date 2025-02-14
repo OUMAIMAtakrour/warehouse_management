@@ -2,9 +2,10 @@ import { apiClient } from "../api/client";
 import {
   Product,
   CreateProductDTO,
-  CreateStcokDto,
+  CreateStockDto,
   ApiResponse,
 } from "../types";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const ProductService = {
   getAllProducts: async (): Promise<ApiResponse<Product[]>> => {
@@ -20,16 +21,84 @@ export const ProductService = {
     }
   },
 
-   getProductById: async (id: string): Promise<ApiResponse<Product>> => {
-      try {
-        const response = await apiClient.get<Product>(`/products/${id}`);
+  getProductById: async (id: string): Promise<ApiResponse<Product>> => {
+    try {
+      const response = await apiClient.get<Product>(`/products/${id}`);
+      return {
+        data: response.data,
+        status: response.status,
+      };
+    } catch (error) {
+      console.error(`Error fetching product with id ${id}:`, error);
+      throw error;
+    }
+  },
+
+  getProductByBarcode: async (
+    barcode: string
+  ): Promise<ApiResponse<Product>> => {
+    try {
+      const response = await apiClient.get<Product[]>(
+        `/products?barcode=${barcode}`
+      );
+      if (response.data.length === 0) {
         return {
-          data: response.data,
-          status: response.status,
+          data: null,
+          status: 404,
+          message: "Product not found",
         };
-      } catch (error) {
-        console.error(`Error fetching product with id ${id}:`, error);
-        throw error;
       }
-    },
+      return {
+        data: response.data[0],
+        status: response.status,
+      };
+    } catch (error) {
+      console.error("Error fetching product by barcode:", error);
+      throw error;
+    }
+  },
+  createProduct: async (
+    productData: CreateProductDTO
+  ): Promise<ApiResponse<Product>> => {
+    try {
+      const existingProduct = await ProductService.getProductByBarcode(
+        productData.barcode
+      );
+      if (existingProduct.data) {
+        return {
+          data: null,
+          status: 409,
+          message: "Product with this barcode already exists",
+        };
+      }
+
+      const warehouseman = await AsyncStorage.getItem("warehouseman");
+      const warehousemanData = warehouseman ? JSON.parse(warehouseman) : null;
+
+      const newProduct = {
+        ...productData,
+        sold: 0,
+        stocks: [
+          {
+            id: productData.stockId,
+            quantity: productData.initialQuantity,
+          },
+        ],
+        editedBy: {
+          warehouseManId: warehousemanData?.id || 1,
+          at: new Date().toISOString(),
+        },
+      };
+
+      const response = await apiClient.post<Product>("/products", newProduct);
+      return {
+        data: response.data,
+        status: response.status,
+        message: "Product created successfully",
+      };
+    } catch (error) {
+      console.error("Error creating product:", error);
+      throw error;
+    }
+  },
 };
