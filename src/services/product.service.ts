@@ -112,12 +112,11 @@ export const ProductService = {
         ...productData,
         sold: 0,
         editedBy: {
-          warehouseManId: warehousemanData?.id || 1, 
+          warehouseManId: warehousemanData?.id || 1,
           at: new Date().toISOString(),
         },
       };
 
-   
       const response = await apiClient.post<Product>("/products", newProduct);
       return {
         data: response.data,
@@ -148,7 +147,6 @@ export const ProductService = {
         };
       }
 
-      
       const currentQuantity = product.stocks[stockIndex].quantity;
       const newQuantity = isAddition
         ? currentQuantity + quantity
@@ -183,6 +181,20 @@ export const ProductService = {
       };
     } catch (error) {
       console.error("Error updating product stock:", error);
+      throw error;
+    }
+  },
+  deleteProduct: async (productId: number): Promise<ApiResponse<void>> => {
+    try {
+      const response = await apiClient.delete(`/products/${productId}`);
+
+      return {
+        data: null,
+        status: response.status,
+        message: "Product deleted successfully",
+      };
+    } catch (error) {
+      console.error("Error deleting product:", error);
       throw error;
     }
   },

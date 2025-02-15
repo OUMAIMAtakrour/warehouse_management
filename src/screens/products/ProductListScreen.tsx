@@ -40,6 +40,21 @@ export default function ProductListScreen({ navigation }) {
     }
   };
 
+  const handleDeleteProduct = (productId: number) => {
+    setProducts((prevProducts) =>
+      prevProducts.filter((product) => product.id !== productId)
+    );
+  };
+
+  const renderItem = ({ item }: { item: Product }) => {
+    return (
+      <ProductCard
+        item={item}
+        navigation={navigation}
+        onDelete={handleDeleteProduct}
+      />
+    );
+  };
   const getTotalQuantity = (stocks: Stock[]) => {
     return stocks.reduce((sum, stock) => sum + stock.quantity, 0);
   };
@@ -59,11 +74,11 @@ export default function ProductListScreen({ navigation }) {
   };
 
   const filteredProducts = products.filter((product) => {
-    const searchLower = searchQuery.toLowerCase();
+    const searchLower = searchQuery?.toLowerCase();
     return (
-      product.name.toLowerCase().includes(searchLower) ||
-      product.type.toLowerCase().includes(searchLower) ||
-      product.supplier.toLowerCase().includes(searchLower) ||
+      product.name?.toLowerCase().includes(searchLower) ||
+      product.type?.toLowerCase().includes(searchLower) ||
+      product.supplier?.toLowerCase().includes(searchLower) ||
       product.price.toString().includes(searchLower)
     );
   });
@@ -76,14 +91,6 @@ export default function ProductListScreen({ navigation }) {
     }
     return 0;
   });
-
-  const renderItem = ({ item }: { item: Product }) => {
-    // const totalQuantity = getTotalQuantity(item.stocks);
-
-    console.log("test", item.image);
-
-    return <ProductCard item={item} navigation={navigation}></ProductCard>;
-  };
 
   if (loading) {
     return (
