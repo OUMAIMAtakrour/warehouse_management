@@ -233,8 +233,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   productImage: {
-    width: "80%",
-    height: "80%",
+    width: "100%",
+    height: "100%",
   },
   section: {
     backgroundColor: colors.white,

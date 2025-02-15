@@ -15,16 +15,15 @@ import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
 import { colors, commonStyles } from "../../../assets/style/common";
 import { ProductService } from "../../services/product.service";
-import { Stock } from "../../types/product.types";
+import { Stock, CreateProductDTO } from "../../types/product.types";
 
 export default function AddProductScreen({ navigation }) {
   const [name, setName] = useState("");
   const [type, setType] = useState("");
   const [price, setPrice] = useState("");
-  const [initialQuantity, setInitialQuantity] = useState("");
-  const [selectedStock, setSelectedStock] = useState("");
-  const [stocks, setStocks] = useState([]);
-  const [image, setImage] = useState(null);
+  const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
+  const [stocks, setStocks] = useState<Stock[]>([]);
+  const [image, setImage] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -80,27 +79,35 @@ export default function AddProductScreen({ navigation }) {
   };
 
   const handleAddProduct = async () => {
-    if (!name || !type || !price || !initialQuantity || !selectedStock) {
-      Alert.alert("Error", "Please fill all fields");
+    if (!name || !type || !price || !selectedStock) {
+      Alert.alert("Error", "Please fill all required fields");
       return;
     }
 
     try {
-      const productData = {
+      const stockWithQuantity = {
+        ...selectedStock,
+        quantity: 0, 
+      };
+
+      const productData: CreateProductDTO = {
         name,
         type,
         barcode: `${Date.now()}`,
         price: parseFloat(price),
-        image: image || "",
-        stocks: [
-          { quantity: parseInt(initialQuantity), location: selectedStock },
-        ],
+        image,
+        supplier: "", 
+        stocks: [stockWithQuantity], 
+        sold: 0,
       };
 
       const response = await ProductService.createProduct(productData);
+
       if (response?.status === 201) {
         Alert.alert("Success", "Product added successfully");
         navigation.goBack();
+      } else if (response?.status === 409) {
+        Alert.alert("Error", "Product with this barcode already exists");
       } else {
         console.error("Error adding product:", response);
         Alert.alert("Error", response?.message || "Failed to add product");
@@ -134,13 +141,6 @@ export default function AddProductScreen({ navigation }) {
           onChangeText={setPrice}
           keyboardType="numeric"
         />
-        <InputField
-          icon="hash"
-          placeholder="Initial Quantity"
-          value={initialQuantity}
-          onChangeText={setInitialQuantity}
-          keyboardType="numeric"
-        />
 
         <View style={styles.pickerContainer}>
           <Feather name="map-pin" size={24} style={styles.inputIcon} />
@@ -149,20 +149,25 @@ export default function AddProductScreen({ navigation }) {
           ) : (
             <Picker
               style={styles.picker}
-              selectedValue={selectedStock}
-              onValueChange={setSelectedStock}
+              selectedValue={selectedStock?.id}
+              onValueChange={(stockId) => {
+                const stock = stocks.find((s) => s.id === stockId);
+                if (stock) {
+                  setSelectedStock(stock);
+                }
+              }}
             >
-              <Picker.Item label="Select Stock Location" value="" />
+              <Picker.Item label="Select Stock Location" value={null} />
               {stocks.length > 0 ? (
                 stocks.map((stock) => (
                   <Picker.Item
                     key={stock.id}
-                    label={stock.localisation.city}
+                    label={`${stock.name} - ${stock.localisation.city}`}
                     value={stock.id}
                   />
                 ))
               ) : (
-                <Picker.Item label="No stocks available" value="" />
+                <Picker.Item label="No stocks available" value={null} />
               )}
             </Picker>
           )}

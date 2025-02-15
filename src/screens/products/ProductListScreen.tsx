@@ -294,10 +294,4 @@ const styles = StyleSheet.create({
     opacity: 0.7,
     marginTop: 4,
   },
-  outOfStock: {
-    backgroundColor: colors.danger + "20",
-  },
-  lowStock: {
-    backgroundColor: colors.warning + "20",
-  },
 });

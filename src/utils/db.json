@@ -141,12 +141,24 @@
       "image": "file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540anonymous%252Fwarehouse-ec399f1b-c33b-47b9-a030-4d190a287f6c/ImagePicker/df8acba5-a75b-4cc8-92e4-52fcc8ddf1ef.jpeg",
       "stocks": [
         {
-          "id": [
-            {
-              "quantity": 0,
-              "location": 1999
-            }
-          ]
+          "id": 1999,
+          "name": "Gueliz B2",
+          "quantity": 21,
+          "localisation": {
+            "city": "Marrakesh",
+            "latitude": 31.628674,
+            "longitude": -7.992047
+          }
+        },
+        {
+          "id": 2991,
+          "name": "Lazari H2",
+          "quantity": 24,
+          "localisation": {
+            "city": "Oujda",
+            "latitude": 34.689404,
+            "longitude": -1.912823
+          }
         }
       ],
       "sold": 0,
@@ -176,6 +188,111 @@
       "editedBy": {
         "warehouseManId": "1333",
         "at": "2025-02-14T15:26:16.653Z"
+      }
+    },
+    {
+      "id": "0655",
+      "name": "Ghollam",
+      "type": "Not sure",
+      "barcode": "1739549835859",
+      "price": 0,
+      "image": "file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540anonymous%252Fwarehouse-ec399f1b-c33b-47b9-a030-4d190a287f6c/ImagePicker/59afc110-e1fa-485f-ac72-dafb78c72392.jpeg",
+      "supplier": "",
+      "stocks": [
+        {
+          "id": 1999,
+          "name": "Gueliz B2",
+          "quantity": 21,
+          "localisation": {
+            "city": "Marrakesh",
+            "latitude": 31.628674,
+            "longitude": -7.992047
+          }
+        }
+      ],
+      "sold": 0,
+      "editedBy": {
+        "warehouseManId": "1333",
+        "at": "2025-02-14T16:17:16.357Z"
+      }
+    },
+    {
+      "id": "8c1a",
+      "name": "Omar",
+      "type": "Tired",
+      "barcode": "1739549923532",
+      "price": 0,
+      "image": "file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540anonymous%252Fwarehouse-ec399f1b-c33b-47b9-a030-4d190a287f6c/ImagePicker/390dc8fe-6349-4278-a9d4-5fd654635256.jpeg",
+      "supplier": "",
+      "stocks": [
+        {
+          "id": 1999,
+          "name": "Gueliz B2",
+          "quantity": 21,
+          "localisation": {
+            "city": "Marrakesh",
+            "latitude": 31.628674,
+            "longitude": -7.992047
+          }
+        }
+      ],
+      "sold": 0,
+      "editedBy": {
+        "warehouseManId": "1333",
+        "at": "2025-02-14T16:18:44.730Z"
+      }
+    },
+    {
+      "id": "140b",
+      "name": "Drtt",
+      "type": "Dftgz",
+      "barcode": "1739550448976",
+      "price": 23,
+      "quantity": 23,
+      "image": "file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540anonymous%252Fwarehouse-ec399f1b-c33b-47b9-a030-4d190a287f6c/ImagePicker/5a2be32e-4c41-46e7-8ec3-fb1516c12710.jpeg",
+      "supplier": "",
+      "stocks": [
+        {
+          "id": 1999,
+          "name": "Gueliz B2",
+          "quantity": 21,
+          "localisation": {
+            "city": "Marrakesh",
+            "latitude": 31.628674,
+            "longitude": -7.992047
+          }
+        }
+      ],
+      "sold": 0,
+      "editedBy": {
+        "warehouseManId": "1333",
+        "at": "2025-02-14T16:27:29.341Z"
+      }
+    },
+    {
+      "id": "e330",
+      "name": "Test",
+      "type": "Sout",
+      "barcode": "1739629813598",
+      "price": 23,
+      "image": "file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540anonymous%252Fwarehouse-ec399f1b-c33b-47b9-a030-4d190a287f6c/ImagePicker/1d66f40a-3d79-4147-9fe5-96b8e855ef99.jpeg",
+      "supplier": "",
+      "stocks": [
+        {
+          "id": 1999,
+          "name": "Gueliz B2",
+          "quantity": 0,
+          "localisation": {
+            "city": "Marrakesh",
+            "latitude": 31.628674,
+            "longitude": -7.992047
+          }
+        }
+      ],
+      "sold": 0,
+      "editedBy": {
+        "warehouseManId": "1333",
+        "at": "2025-02-15T14:30:13.868Z"
       }
     }
   ],

@@ -56,7 +56,7 @@ export const ProductService = {
   getProductById: async (id: string): Promise<ApiResponse<Product>> => {
     try {
       const response = await apiClient.get<Product>(`/products/${id}`);
-      
+
       return {
         data: response.data,
         status: response.status,
@@ -111,18 +111,13 @@ export const ProductService = {
       const newProduct = {
         ...productData,
         sold: 0,
-        stocks: [
-          {
-            id: productData.stocks,
-            quantity: productData.initialQuantity,
-          },
-        ],
         editedBy: {
-          warehouseManId: warehousemanData?.id || 1,
+          warehouseManId: warehousemanData?.id || 1, 
           at: new Date().toISOString(),
         },
       };
 
+   
       const response = await apiClient.post<Product>("/products", newProduct);
       return {
         data: response.data,
@@ -131,6 +126,63 @@ export const ProductService = {
       };
     } catch (error) {
       console.error("Error creating product:", error);
+      throw error;
+    }
+  },
+  updateProductStock: async (
+    productId: number,
+    stockId: number,
+    quantity: number,
+    isAddition: boolean
+  ): Promise<ApiResponse<Product>> => {
+    try {
+      const response = await apiClient.get<Product>(`/products/${productId}`);
+      const product = response.data;
+
+      const stockIndex = product.stocks.findIndex((s) => s.id === stockId);
+      if (stockIndex === -1) {
+        return {
+          data: null,
+          status: 404,
+          message: "Stock not found for this product",
+        };
+      }
+
+      
+      const currentQuantity = product.stocks[stockIndex].quantity;
+      const newQuantity = isAddition
+        ? currentQuantity + quantity
+        : currentQuantity - quantity;
+
+      if (newQuantity < 0) {
+        return {
+          data: null,
+          status: 400,
+          message: "Insufficient stock quantity",
+        };
+      }
+
+      const warehouseman = await AsyncStorage.getItem("warehouseman");
+      const warehousemanData = warehouseman ? JSON.parse(warehouseman) : null;
+
+      product.stocks[stockIndex].quantity = newQuantity;
+      product.editedBy = {
+        warehouseManId: warehousemanData?.id || 1,
+        at: new Date().toISOString(),
+      };
+
+      const updateResponse = await apiClient.put<Product>(
+        `/products/${productId}`,
+        product
+      );
+
+      return {
+        data: updateResponse.data,
+        status: updateResponse.status,
+        message: `Stock ${isAddition ? "added" : "removed"} successfully`,
+      };
+    } catch (error) {
+      console.error("Error updating product stock:", error);
       throw error;
     }
   },
