@@ -128,6 +128,25 @@ export const ProductService = {
       throw error;
     }
   },
+  updateProduct: async (
+    productId: number | string,
+    productData: Partial<Product>
+  ): Promise<ApiResponse<Product>> => {
+    try {
+      const response = await apiClient.put<Product>(
+        `/products/${productId}`,
+        productData
+      );
+      return {
+        data: response.data,
+        status: response.status,
+        message: "Product updated successfully",
+      };
+    } catch (error) {
+      console.error("Error updating product:", error);
+      throw error;
+    }
+  },
   updateProductStock: async (
     productId: number,
     stockId: number,

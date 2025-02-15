@@ -9,6 +9,7 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  Modal,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { colors } from "../../../assets/style/common";
@@ -43,6 +44,119 @@ const InfoItem: React.FC<InfoItemProps> = ({ icon, label, value }) => (
   </View>
 );
 
+const EditProductModal: React.FC<{
+  visible: boolean;
+  onClose: () => void;
+  product: Product;
+  onUpdate: () => void;
+}> = ({ visible, onClose, product, onUpdate }) => {
+  const [formData, setFormData] = useState({
+    name: product?.name || "",
+    type: product?.type || "",
+    price: product?.price?.toString() || "",
+    supplier: product?.supplier || "",
+  });
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+      const updatedProduct = {
+        ...product,
+        ...formData,
+        price: parseFloat(formData.price),
+        editedBy: {
+          ...product.editedBy,
+          at: new Date().toISOString(),
+        },
+      };
+
+      await ProductService.updateProduct(product.id, updatedProduct);
+      Alert.alert("Success", "Product updated successfully");
+      onUpdate();
+      onClose();
+    } catch (error) {
+      Alert.alert("Error", "Failed to update product");
+      console.error("Error updating product:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent={true}
+      onRequestClose={onClose}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Edit Product</Text>
+            <TouchableOpacity onPress={onClose}>
+              <Feather name="x" size={24} color={colors.text} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.modalForm}>
+            <Text style={styles.modalLabel}>Name</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={formData.name}
+              onChangeText={(value) =>
+                setFormData((prev) => ({ ...prev, name: value }))
+              }
+              placeholder="Product name"
+            />
+
+            <Text style={styles.modalLabel}>Type</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={formData.type}
+              onChangeText={(value) =>
+                setFormData((prev) => ({ ...prev, type: value }))
+              }
+              placeholder="Product type"
+            />
+
+            <Text style={styles.modalLabel}>Price</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={formData.price}
+              onChangeText={(value) =>
+                setFormData((prev) => ({ ...prev, price: value }))
+              }
+              placeholder="Product price"
+              keyboardType="decimal-pad"
+            />
+
+            <Text style={styles.modalLabel}>Supplier</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={formData.supplier}
+              onChangeText={(value) =>
+                setFormData((prev) => ({ ...prev, supplier: value }))
+              }
+              placeholder="Supplier name"
+            />
+
+            <TouchableOpacity
+              style={[styles.modalButton, loading && { opacity: 0.7 }]}
+              onPress={handleSubmit}
+              disabled={loading}
+            >
+              <Text style={styles.modalButtonText}>
+                {loading ? "Updating..." : "Update Product"}
+              </Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+};
+
 export default function ProductDetailsScreen({
   route,
   navigation,
@@ -52,6 +166,7 @@ export default function ProductDetailsScreen({
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false);
 
   useEffect(() => {
     fetchProductDetails();
@@ -128,87 +243,112 @@ export default function ProductDetailsScreen({
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.imageContainer}>
-        <Image
-          source={{ uri: product.image }}
-          style={styles.productImage}
-          resizeMode="contain"
-        />
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.productName}>{product.name}</Text>
-        <Text style={styles.productType}>{product.type}</Text>
-      </View>
-
-      <View style={styles.section}>
-        <View style={styles.infoRow}>
-          <InfoItem
-            icon="tag"
-            label="Price"
-            value={`$${product.price.toFixed(2)}`}
-          />
-          <InfoItem
-            icon="package"
-            label="Total Stock"
-            value={getTotalQuantity(product.stocks)}
+    <>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        <View style={styles.imageContainer}>
+          <Image
+            source={{ uri: product.image }}
+            style={styles.productImage}
+            resizeMode="contain"
           />
         </View>
-        <InfoItem icon="truck" label="Supplier" value={product.supplier} />
-        <InfoItem
-          icon="clock"
-          label="Last Updated"
-          value={new Date(product.editedBy.at).toLocaleDateString()}
-        />
-        <InfoItem icon="user" label="Updated By" value={product.editedBy.by} />
-      </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Stock Locations</Text>
-        {product.stocks.map((stock, index) => (
-          <View
-            key={index}
-            style={[
-              styles.stockLocation,
-              index === product.stocks.length - 1 && { borderBottomWidth: 0 }
-            ]}
-          >
-            <Feather name="map-pin" size={16} color={colors.primary} />
-            <Text style={styles.locationCity}>{stock.localisation.city}</Text>
-            <Text style={styles.locationQuantity}>{stock.quantity} units</Text>
+        <View style={styles.section}>
+          <View style={styles.productHeader}>
+            <View>
+              <Text style={styles.productName}>{product.name}</Text>
+              <Text style={styles.productType}>{product.type}</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => setIsEditModalVisible(true)}
+            >
+              <Feather name="edit-2" size={20} color={colors.primary} />
+            </TouchableOpacity>
           </View>
-        ))}
-      </View>
-
-      <View style={[styles.section, styles.lastSection]}>
-        <Text style={styles.sectionTitle}>Stock Management</Text>
-        <TextInput
-          style={styles.quantityInput}
-          placeholder="Enter quantity"
-          keyboardType="numeric"
-          value={quantity}
-          onChangeText={setQuantity}
-          placeholderTextColor={colors.secondary}
-        />
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={[styles.button, styles.addButton]}
-            onPress={handleAddStock}
-          >
-            <Feather name="plus" size={20} color={colors.white} />
-            <Text style={styles.buttonText}>Add Stock</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, styles.removeButton]}
-            onPress={handleRemoveStock}
-          >
-            <Feather name="minus" size={20} color={colors.white} />
-            <Text style={styles.buttonText}>Remove Stock</Text>
-          </TouchableOpacity>
         </View>
-      </View>
-    </ScrollView>
+
+        <View style={styles.section}>
+          <View style={styles.infoRow}>
+            <InfoItem
+              icon="tag"
+              label="Price"
+              value={`${product.price.toFixed(2)}`}
+            />
+            <InfoItem
+              icon="package"
+              label="Total Stock"
+              value={getTotalQuantity(product.stocks)}
+            />
+          </View>
+          <InfoItem icon="truck" label="Supplier" value={product.supplier} />
+          <InfoItem
+            icon="clock"
+            label="Last Updated"
+            value={new Date(product.editedBy.at).toLocaleDateString()}
+          />
+          <InfoItem
+            icon="user"
+            label="Updated By"
+            value={product.editedBy.by}
+          />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Stock Locations</Text>
+          {product.stocks.map((stock, index) => (
+            <View
+              key={index}
+              style={[
+                styles.stockLocation,
+                index === product.stocks.length - 1 && { borderBottomWidth: 0 },
+              ]}
+            >
+              <Feather name="map-pin" size={16} color={colors.primary} />
+              <Text style={styles.locationCity}>{stock.localisation.city}</Text>
+              <Text style={styles.locationQuantity}>
+                {stock.quantity} units
+              </Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={[styles.section, styles.lastSection]}>
+          <Text style={styles.sectionTitle}>Stock Management</Text>
+          <TextInput
+            style={styles.quantityInput}
+            placeholder="Enter quantity"
+            keyboardType="numeric"
+            value={quantity}
+            onChangeText={setQuantity}
+            placeholderTextColor={colors.secondary}
+          />
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={[styles.button, styles.addButton]}
+              onPress={handleAddStock}
+            >
+              <Feather name="plus" size={20} color={colors.white} />
+              <Text style={styles.buttonText}>Add Stock</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.removeButton]}
+              onPress={handleRemoveStock}
+            >
+              <Feather name="minus" size={20} color={colors.white} />
+              <Text style={styles.buttonText}>Remove Stock</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </ScrollView>
+
+      <EditProductModal
+        visible={isEditModalVisible}
+        onClose={() => setIsEditModalVisible(false)}
+        product={product}
+        onUpdate={fetchProductDetails}
+      />
+    </>
   );
 }
 
@@ -250,6 +390,11 @@ const styles = StyleSheet.create({
   },
   lastSection: {
     marginBottom: 24,
+  },
+  productHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
   },
   productName: {
     fontSize: 24,
@@ -367,5 +512,70 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontWeight: "600",
     fontSize: 16,
+  },
+  editButton: {
+    padding: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  modalContent: {
+    backgroundColor: colors.background,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    minHeight: "80%",
+    padding: 16,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+    paddingHorizontal: 4,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: colors.text,
+  },
+  modalForm: {
+    flex: 1,
+  },
+  modalLabel: {
+    fontSize: 16,
+    color: colors.text,
+    marginBottom: 8,
+  },
+  modalInput: {
+    backgroundColor: colors.white,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+    color: colors.text,
+  },
+  modalButton: {
+    backgroundColor: colors.primary,
+    padding: 16,
+    borderRadius: 8,
+    alignItems: "center",
+    marginTop: 16,
+    marginBottom: 32,
+  },
+  modalButtonText: {
+    color: colors.white,
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  productHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  editButton: {
+    padding: 8,
   },
 });

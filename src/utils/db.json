@@ -40,11 +40,11 @@
     },
     {
       "id": "2",
-      "name": "Clavier Mécanique Logitech",
+      "name": "Clavier  Logitech",
       "type": "Accessoires",
       "barcode": "9876543210987",
-      "price": 100,
-      "supplier": "Logitech",
+      "price": 908,
+      "supplier": "LAPD",
       "image": "https://in-media.apjonlinecdn.com/catalog/product/cache/b3b166914d87ce343d4dc5ec5117b502/8/a/8aa01aa.png",
       "stocks": [
         {
@@ -68,12 +68,13 @@
           }
         }
       ],
-      "editedBy": [
-        {
+      "editedBy": {
+        "0": {
           "warehousemanId": 1444,
           "at": "2025-02-02"
-        }
-      ]
+        },
+        "at": "2025-02-15T17:30:28.702Z"
+      }
     },
     {
       "id": "3",
