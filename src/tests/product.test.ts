@@ -4,7 +4,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Product, CreateProductDTO, Stock, Location } from "../types";
 
 jest.mock("../api/client");
-jest.mock("@react-native-async-storage/async-storage");
+jest.mock("@react-native-async-storage/async-storage", () => ({
+  getItem: jest.fn(() => Promise.resolve(null)),
+  setItem: jest.fn(() => Promise.resolve()),
+  removeItem: jest.fn(() => Promise.resolve()),
+  clear: jest.fn(() => Promise.resolve()),
+}));
 
 describe("ProductService", () => {
   beforeEach(() => {
