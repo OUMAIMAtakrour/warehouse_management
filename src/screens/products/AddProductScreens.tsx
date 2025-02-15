@@ -15,16 +15,19 @@ import * as ImagePicker from "expo-image-picker";
 import { Picker } from "@react-native-picker/picker";
 import { colors, commonStyles } from "../../../assets/style/common";
 import { ProductService } from "../../services/product.service";
-import { Stock, CreateProductDTO } from "../../types/product.types";
+import { Stock, CreateProductDTO, Product } from "../../types/product.types";
+import ProductScann from "../../components/ProductScann";
 
 export default function AddProductScreen({ navigation }) {
   const [name, setName] = useState("");
   const [type, setType] = useState("");
   const [price, setPrice] = useState("");
+  const [barcode, setBarcode] = useState("");
   const [selectedStock, setSelectedStock] = useState<Stock | null>(null);
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [image, setImage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
 
   useEffect(() => {
     const fetchStocks = async () => {
@@ -49,6 +52,30 @@ export default function AddProductScreen({ navigation }) {
     };
     fetchStocks();
   }, []);
+
+  const handleBarcodeScanned = async (scanData: {
+    type: string;
+    data: string;
+  }) => {
+    try {
+      const response = await ProductService.getProductByBarcode(scanData.data);
+
+      if (response.status === 404) {
+        setBarcode(scanData.data);
+        setShowScanner(false);
+        Alert.alert("Success", "Barcode scanned successfully");
+      } else if (response.status === 200 && response.data) {
+        Alert.alert(
+          "Product Exists",
+          `A product with barcode ${scanData.data} already exists in the database.`,
+          [{ text: "OK" }]
+        );
+      }
+    } catch (error) {
+      console.error("Error checking barcode:", error);
+      Alert.alert("Error", "Failed to verify barcode. Please try again.");
+    }
+  };
 
   const handleImagePick = async () => {
     const permissionResult =
@@ -79,7 +106,7 @@ export default function AddProductScreen({ navigation }) {
   };
 
   const handleAddProduct = async () => {
-    if (!name || !type || !price || !selectedStock) {
+    if (!name || !type || !price || !selectedStock || !barcode) {
       Alert.alert("Error", "Please fill all required fields");
       return;
     }
@@ -87,17 +114,17 @@ export default function AddProductScreen({ navigation }) {
     try {
       const stockWithQuantity = {
         ...selectedStock,
-        quantity: 0, 
+        quantity: 0,
       };
 
       const productData: CreateProductDTO = {
         name,
         type,
-        barcode: `${Date.now()}`,
+        barcode,
         price: parseFloat(price),
         image,
-        supplier: "", 
-        stocks: [stockWithQuantity], 
+        supplier: "",
+        stocks: [stockWithQuantity],
         sold: 0,
       };
 
@@ -134,6 +161,21 @@ export default function AddProductScreen({ navigation }) {
           value={type}
           onChangeText={setType}
         />
+        <View style={styles.barcodeContainer}>
+          <InputField
+            icon="hash"
+            placeholder="Barcode"
+            value={barcode}
+            onChangeText={setBarcode}
+            editable={false}
+          />
+          <TouchableOpacity
+            style={styles.scanButton}
+            onPress={() => setShowScanner(true)}
+          >
+            <Feather name="camera" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
         <InputField
           icon="dollar-sign"
           placeholder="Price"
@@ -192,6 +234,12 @@ export default function AddProductScreen({ navigation }) {
         <Feather name="plus-circle" size={24} color={colors.white} />
         <Text style={styles.buttonText}>Add Product</Text>
       </TouchableOpacity>
+
+      <ProductScann
+        showScanner={showScanner}
+        setShowScanner={setShowScanner}
+        onBarcodeScanned={handleBarcodeScanned}
+      />
     </ScrollView>
   );
 }
@@ -217,6 +265,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 15,
+  },
+  barcodeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  scanButton: {
+    padding: 10,
+    marginLeft: 10,
   },
   inputIcon: { marginRight: 10 },
   input: {

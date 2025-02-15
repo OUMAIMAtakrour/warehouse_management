@@ -15,6 +15,7 @@ import { Feather } from "@expo/vector-icons";
 import { colors } from "../../../assets/style/common";
 import { ProductService } from "../../services/product.service";
 import { Product, Stock } from "../../types";
+import ExportPDFButton from "../../components/ExportPDFButton";
 
 interface ProductDetailsProps {
   route: {
@@ -265,6 +266,7 @@ export default function ProductDetailsScreen({
             >
               <Feather name="edit-2" size={20} color={colors.primary} />
             </TouchableOpacity>
+            <ExportPDFButton product={product} />
           </View>
         </View>
 
@@ -311,34 +313,6 @@ export default function ProductDetailsScreen({
               </Text>
             </View>
           ))}
-        </View>
-
-        <View style={[styles.section, styles.lastSection]}>
-          <Text style={styles.sectionTitle}>Stock Management</Text>
-          <TextInput
-            style={styles.quantityInput}
-            placeholder="Enter quantity"
-            keyboardType="numeric"
-            value={quantity}
-            onChangeText={setQuantity}
-            placeholderTextColor={colors.secondary}
-          />
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.button, styles.addButton]}
-              onPress={handleAddStock}
-            >
-              <Feather name="plus" size={20} color={colors.white} />
-              <Text style={styles.buttonText}>Add Stock</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.button, styles.removeButton]}
-              onPress={handleRemoveStock}
-            >
-              <Feather name="minus" size={20} color={colors.white} />
-              <Text style={styles.buttonText}>Remove Stock</Text>
-            </TouchableOpacity>
-          </View>
         </View>
       </ScrollView>
 
@@ -391,11 +365,7 @@ const styles = StyleSheet.create({
   lastSection: {
     marginBottom: 24,
   },
-  productHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-  },
+
   productName: {
     fontSize: 24,
     fontWeight: "bold",
@@ -554,7 +524,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: "rgba(0, 0, 0, 0.32)",
     color: colors.text,
   },
   modalButton: {
@@ -574,8 +544,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-  },
-  editButton: {
-    padding: 8,
   },
 });

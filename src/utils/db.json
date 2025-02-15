@@ -201,6 +201,32 @@
         "warehouseManId": "1333",
         "at": "2025-02-14T16:18:44.730Z"
       }
+    },
+    {
+      "id": "9e1f",
+      "name": "Test code",
+      "type": "Code",
+      "barcode": "6111035001673",
+      "price": 23,
+      "image": "file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540anonymous%252Fwarehouse-ec399f1b-c33b-47b9-a030-4d190a287f6c/ImagePicker/bb76da9e-de0b-465f-8131-ff652c481db2.jpeg",
+      "supplier": "",
+      "stocks": [
+        {
+          "id": 1999,
+          "name": "Gueliz B2",
+          "quantity": 0,
+          "localisation": {
+            "city": "Marrakesh",
+            "latitude": 31.628674,
+            "longitude": -7.992047
+          }
+        }
+      ],
+      "sold": 0,
+      "editedBy": {
+        "warehouseManId": "1333",
+        "at": "2025-02-15T22:15:47.465Z"
+      }
     }
   ],
   "warehousemans": [
