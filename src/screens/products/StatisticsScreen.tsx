@@ -1,17 +1,61 @@
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { colors, commonStyles } from "../../../assets/style/common";
-
-const mockStats = {
-  totalProducts: 150,
-  totalCities: 5,
-  outOfStockProducts: 12,
-  totalInventoryValue: 25000,
-  recentlyAddedProducts: ["Product A", "Product B", "Product C"],
-  recentlyRemovedProducts: ["Product X", "Product Y"],
-};
+import {
+  StatisticsService,
+  Statistics,
+} from "../../services/statistics.service";
 
 export default function StatisticsScreen() {
+  const [stats, setStats] = useState<Statistics | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadStatistics();
+  }, []);
+
+  const loadStatistics = async () => {
+    try {
+      setLoading(true);
+      const statistics = await StatisticsService.getStatistics();
+      setStats(statistics);
+      setError(null);
+    } catch (err) {
+      setError("Failed to load statistics");
+      console.error("Error loading statistics:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
+
+  if (!stats) {
+    return null;
+  }
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Inventory Summary</Text>
@@ -20,38 +64,38 @@ export default function StatisticsScreen() {
         <StatItem
           icon="box"
           label="Total Products"
-          value={mockStats.totalProducts}
+          value={stats.totalProducts}
         />
         <StatItem
           icon="map-pin"
           label="Total Cities"
-          value={mockStats.totalCities}
+          value={stats.totalCities}
         />
         <StatItem
           icon="alert-triangle"
           label="Out of Stock"
-          value={mockStats.outOfStockProducts}
+          value={stats.outOfStockProducts}
         />
         <StatItem
           icon="dollar-sign"
           label="Inventory Value"
-          value={`$${mockStats.totalInventoryValue.toLocaleString()}`}
+          value={`$${stats.totalInventoryValue.toLocaleString()}`}
         />
       </View>
 
       <View style={styles.recentActivity}>
-        <Text style={styles.subtitle}>Recently Added Products</Text>
-        {mockStats.recentlyAddedProducts.map((product, index) => (
+        <Text style={styles.subtitle}>Top Stocked Products</Text>
+        {stats.recentlyAddedProducts.map((product, index) => (
           <Text key={index} style={styles.listItem}>
             <Feather name="plus-circle" size={16} color={colors.secondary} />{" "}
             {product}
           </Text>
         ))}
 
-        <Text style={styles.subtitle}>Recently Removed Products</Text>
-        {mockStats.recentlyRemovedProducts.map((product, index) => (
+        <Text style={styles.subtitle}>Most Sold Products</Text>
+        {stats.mostRemovedProducts.map((product, index) => (
           <Text key={index} style={styles.listItem}>
-            <Feather name="minus-circle" size={16} color={colors.danger} />{" "}
+            <Feather name="trending-up" size={16} color={colors.danger} />{" "}
             {product}
           </Text>
         ))}
@@ -114,5 +158,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.text,
     marginBottom: 5,
+  },
+  centerContent: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
+    color: colors.danger,
+    fontSize: 16,
   },
 });

@@ -162,6 +162,12 @@ export default function AddProductScreen({ navigation }) {
           onChangeText={setType}
         />
         <View style={styles.barcodeContainer}>
+          <TouchableOpacity
+            style={styles.scanButton}
+            onPress={() => setShowScanner(true)}
+          >
+            <Feather name="camera" size={24} color={colors.primary} />
+          </TouchableOpacity>
           <InputField
             icon="hash"
             placeholder="Barcode"
@@ -169,12 +175,6 @@ export default function AddProductScreen({ navigation }) {
             onChangeText={setBarcode}
             editable={false}
           />
-          <TouchableOpacity
-            style={styles.scanButton}
-            onPress={() => setShowScanner(true)}
-          >
-            <Feather name="camera" size={24} color={colors.primary} />
-          </TouchableOpacity>
         </View>
         <InputField
           icon="dollar-sign"

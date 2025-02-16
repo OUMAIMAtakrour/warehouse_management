@@ -292,7 +292,7 @@ export default function ProductDetailsScreen({
           <InfoItem
             icon="user"
             label="Updated By"
-            value={product.editedBy.by}
+            value={product.editedBy.warehouseManId}
           />
         </View>
 
