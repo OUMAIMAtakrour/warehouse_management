@@ -4,7 +4,6 @@ import { colors, commonStyles } from "../../../assets/style/common";
 
 export default function HomeScreen({ navigation }) {
   const menuItems = [
-    { icon: "camera", label: "Scan Product", screen: "ProductScan" },
     { icon: "list", label: "Product List", screen: "ProductList" },
     { icon: "bar-chart-2", label: "Statistics", screen: "Statistics" },
     { icon: "plus-square", label: "Add Product", screen: "AddProduct" },

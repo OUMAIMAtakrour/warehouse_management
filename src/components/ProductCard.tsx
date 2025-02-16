@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { ProductService } from "../services/product.service";
+import { StatisticsService } from "../services/statistics.service";
 
 const ProductCard = ({ item, navigation, onDelete }) => {
   const getTotalQuantity = (stocks) => {
@@ -38,6 +39,8 @@ const ProductCard = ({ item, navigation, onDelete }) => {
             try {
               const response = await ProductService.deleteProduct(item.id);
               if (response.status === 200) {
+                // Track the deletion
+                await StatisticsService.trackDeletion(item.name);
                 onDelete(item.id);
               }
             } catch (error) {
