@@ -23,6 +23,13 @@ export const authService = {
     }
   },
 
+
+
+
+
+
+
+  
   logout: async (): Promise<void> => {
     try {
       await AsyncStorage.removeItem("warehouseman");

@@ -201,11 +201,10 @@ export default function AddProductScreen({ navigation }) {
             >
               <Picker.Item label="Select Stock Location" value={null} />
               {stocks.length > 0 ? (
-                stocks.map((stock) => (
+                stocks.flatMap((stock) => (
                   <Picker.Item
                     key={stock.id}
                     label={`${stock.name} - ${stock.localisation.city}`}
-                    value={stock.id}
                   />
                 ))
               ) : (

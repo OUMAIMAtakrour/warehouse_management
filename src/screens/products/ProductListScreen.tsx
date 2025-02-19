@@ -1,14 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  Image,
   TextInput,
   ActivityIndicator,
+  RefreshControl,
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import ProductCard from "../../components/ProductCard";
 import { Feather } from "@expo/vector-icons";
 import { colors, commonStyles } from "../../../assets/style/common";
@@ -20,11 +21,18 @@ export default function ProductListScreen({ navigation }) {
   const [sortBy, setSortBy] = useState("name");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchProducts();
+    }, [])
+  );
 
   const fetchProducts = async () => {
     try {
@@ -40,10 +48,20 @@ export default function ProductListScreen({ navigation }) {
     }
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchProducts();
+    setRefreshing(false);
+  };
+
   const handleDeleteProduct = (productId: number) => {
     setProducts((prevProducts) =>
       prevProducts.filter((product) => product.id !== productId)
     );
+  };
+
+  const getTotalQuantity = (stocks: Stock[]) => {
+    return stocks.reduce((sum, stock) => sum + stock.quantity, 0);
   };
 
   const renderItem = ({ item }: { item: Product }) => {
@@ -53,23 +71,6 @@ export default function ProductListScreen({ navigation }) {
         navigation={navigation}
         onDelete={handleDeleteProduct}
       />
-    );
-  };
-  const getTotalQuantity = (stocks: Stock[]) => {
-    return stocks.reduce((sum, stock) => sum + stock.quantity, 0);
-  };
-
-  const renderStockInfo = (stocks: Stock[]) => {
-    const totalQuantity = getTotalQuantity(stocks);
-    const stockLocations = stocks
-      .map((stock) => `${stock.localisation.city}: ${stock.quantity}`)
-      .join("\n");
-
-    return (
-      <View>
-        <Text style={styles.totalQuantity}>Total Qty: {totalQuantity}</Text>
-        <Text style={styles.stockLocations}>{stockLocations}</Text>
-      </View>
     );
   };
 
@@ -189,6 +190,9 @@ export default function ProductListScreen({ navigation }) {
         renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
         style={styles.list}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       />
     </View>
   );
@@ -250,55 +254,5 @@ const styles = StyleSheet.create({
   },
   list: {
     flex: 1,
-  },
-  productItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: colors.white,
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 10,
-    elevation: 2,
-  },
-  productInfo: {
-    flex: 1,
-  },
-  productName: {
-    fontWeight: "bold",
-    fontSize: 16,
-    color: colors.text,
-  },
-  productType: {
-    color: colors.text,
-    opacity: 0.7,
-  },
-  productSupplier: {
-    color: colors.text,
-    opacity: 0.7,
-    fontSize: 12,
-  },
-  productStats: {
-    alignItems: "flex-end",
-  },
-  productPrice: {
-    fontWeight: "bold",
-    color: colors.primary,
-  },
-  totalQuantity: {
-    color: colors.text,
-    fontWeight: "bold",
-    marginTop: 4,
-  },
-  stockLocations: {
-    color: colors.text,
-    opacity: 0.7,
-    fontSize: 12,
-  },
-  editedBy: {
-    fontSize: 12,
-    color: colors.text,
-    opacity: 0.7,
-    marginTop: 4,
   },
 });

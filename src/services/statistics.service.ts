@@ -52,7 +52,6 @@ export const StatisticsService = {
     }
   },
 
-  // Get deletion statistics
   getDeletionStats: async (): Promise<DeletionCount[]> => {
     try {
       const storedCounts = await AsyncStorage.getItem(DELETION_COUNTS_KEY);
@@ -63,73 +62,68 @@ export const StatisticsService = {
     }
   },
 
-  getStatistics: async (): Promise<Statistics> => {
-    try {
-      const response = await ProductService.getAllProducts();
-      const products = response.data;
-      const deletionStats = await StatisticsService.getDeletionStats();
+//   getStatistics: async (): Promise<Statistics> => {
+//     try {
+//       const response = await ProductService.getAllProducts();
+//       const products = response.data;
+//       const deletionStats = await StatisticsService.getDeletionStats();
 
-      // Get unique cities
-      const cities = new Set(
-        products
-          .flatMap((product) => product.stocks || [])
-          .filter((stock) => stock?.localisation?.city)
-          .map((stock) => stock.localisation.city)
-      );
+//       const cities = new Set(
+//         products
+//           .flatMap((product) => product.stocks || [])
+//           .filter((stock) => stock?.localisation?.city)
+//           .map((stock) => stock.localisation.city)
+//       );
 
-      // Calculate out of stock products
-      const outOfStockProducts = products.filter((product) => {
-        const stocks = product.stocks || [];
-        return (
-          stocks.length === 0 ||
-          stocks.every((stock) => !stock || stock.quantity === 0)
-        );
-      }).length;
+//       const outOfStockProducts = products.filter((product) => {
+//         const stocks = product.stocks || [];
+//         return (
+//           stocks.length === 0 ||
+//           stocks.every((stock) => !stock || stock.quantity === 0)
+//         );
+//       }).length;
 
-      // Calculate total inventory value
-      const totalInventoryValue = products.reduce((sum, product) => {
-        const stockQuantity = (product.stocks || []).reduce(
-          (total, stock) => total + (stock?.quantity || 0),
-          0
-        );
-        return sum + stockQuantity * (product.price || 0);
-      }, 0);
+//       const totalInventoryValue = products.reduce((sum, product) => {
+//         const stockQuantity = (product.stocks || []).reduce(
+//           (total, stock) => total + (stock?.quantity || 0),
+//           0
+//         );
+//         return sum + stockQuantity * (product.price || 0);
+//       }, 0);
 
-      // Get recently added products (highest stock)
-      const recentlyAddedProducts = [...products]
-        .sort((a, b) => {
-          const stockA = (a.stocks || []).reduce(
-            (sum, stock) => sum + (stock?.quantity || 0),
-            0
-          );
-          const stockB = (b.stocks || []).reduce(
-            (sum, stock) => sum + (stock?.quantity || 0),
-            0
-          );
-          return stockB - stockA;
-        })
-        .slice(0, 5)
-        .map((product) => product.name);
+//       const recentlyAddedProducts = [...products]
+//         .sort((a, b) => {
+//           const stockA = (a.stocks || []).reduce(
+//             (sum, stock) => sum + (stock?.quantity || 0),
+//             0
+//           );
+//           const stockB = (b.stocks || []).reduce(
+//             (sum, stock) => sum + (stock?.quantity || 0),
+//             0
+//           );
+//           return stockB - stockA;
+//         })
+//         .slice(0, 5)
+//         .map((product) => product.name);
 
-      // Get most deleted products
-      const mostDeletedProducts = deletionStats
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5)
-        .map((stat) => `${stat.productName} (${stat.count})`);
+//       const mostDeletedProducts = deletionStats
+//         .sort((a, b) => b.count - a.count)
+//         .slice(0, 5)
+//         .map((stat) => `${stat.productName} (${stat.count})`);
 
-      return {
-        totalProducts: products.length,
-        totalCities: cities.size,
-        outOfStockProducts,
-        totalInventoryValue,
-        recentlyAddedProducts,
-        mostDeletedProducts,
-      };
-    } catch (error) {
-      console.error("Error calculating statistics:", error);
-      throw error;
-    }
-  },
+//       return {
+//         totalProducts: products.length,
+//         totalCities: cities.size,
+//         outOfStockProducts,
+//         totalInventoryValue,
+//         recentlyAddedProducts,
+//         mostDeletedProducts,
+//       };
+//     } catch (error) {
+//       console.error("Error calculating statistics:", error);
+//       throw error;
+//     }
+//   },
   getStatistics: async (): Promise<Statistics> => {
     try {
       const response = await ProductService.getAllProducts();

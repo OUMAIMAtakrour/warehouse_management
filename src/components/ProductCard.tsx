@@ -39,7 +39,6 @@ const ProductCard = ({ item, navigation, onDelete }) => {
             try {
               const response = await ProductService.deleteProduct(item.id);
               if (response.status === 200) {
-                // Track the deletion
                 await StatisticsService.trackDeletion(item.name);
                 onDelete(item.id);
               }

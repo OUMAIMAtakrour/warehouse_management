@@ -16,22 +16,11 @@ import { colors } from "../../../assets/style/common";
 import { ProductService } from "../../services/product.service";
 import { Product, Stock } from "../../types";
 import ExportPDFButton from "../../components/ExportPDFButton";
+import { InfoItemProps,ProductDetailsProps } from "../../types";
+import EditProductModal from "../../components/EditProductModal";
+import * as ImagePicker from "expo-image-picker";
 
-interface ProductDetailsProps {
-  route: {
-    params: {
-      productId: string;
-      barcode?: string;
-    };
-  };
-  navigation: any;
-}
 
-interface InfoItemProps {
-  icon: string;
-  label: string;
-  value: string | number;
-}
 
 const InfoItem: React.FC<InfoItemProps> = ({ icon, label, value }) => (
   <View style={styles.infoItem}>
@@ -45,118 +34,6 @@ const InfoItem: React.FC<InfoItemProps> = ({ icon, label, value }) => (
   </View>
 );
 
-const EditProductModal: React.FC<{
-  visible: boolean;
-  onClose: () => void;
-  product: Product;
-  onUpdate: () => void;
-}> = ({ visible, onClose, product, onUpdate }) => {
-  const [formData, setFormData] = useState({
-    name: product?.name || "",
-    type: product?.type || "",
-    price: product?.price?.toString() || "",
-    supplier: product?.supplier || "",
-  });
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async () => {
-    try {
-      setLoading(true);
-      const updatedProduct = {
-        ...product,
-        ...formData,
-        price: parseFloat(formData.price),
-        editedBy: {
-          ...product.editedBy,
-          at: new Date().toISOString(),
-        },
-      };
-
-      await ProductService.updateProduct(product.id, updatedProduct);
-      Alert.alert("Success", "Product updated successfully");
-      onUpdate();
-      onClose();
-    } catch (error) {
-      Alert.alert("Error", "Failed to update product");
-      console.error("Error updating product:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      transparent={true}
-      onRequestClose={onClose}
-    >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Edit Product</Text>
-            <TouchableOpacity onPress={onClose}>
-              <Feather name="x" size={24} color={colors.text} />
-            </TouchableOpacity>
-          </View>
-
-          <ScrollView style={styles.modalForm}>
-            <Text style={styles.modalLabel}>Name</Text>
-            <TextInput
-              style={styles.modalInput}
-              value={formData.name}
-              onChangeText={(value) =>
-                setFormData((prev) => ({ ...prev, name: value }))
-              }
-              placeholder="Product name"
-            />
-
-            <Text style={styles.modalLabel}>Type</Text>
-            <TextInput
-              style={styles.modalInput}
-              value={formData.type}
-              onChangeText={(value) =>
-                setFormData((prev) => ({ ...prev, type: value }))
-              }
-              placeholder="Product type"
-            />
-
-            <Text style={styles.modalLabel}>Price</Text>
-            <TextInput
-              style={styles.modalInput}
-              value={formData.price}
-              onChangeText={(value) =>
-                setFormData((prev) => ({ ...prev, price: value }))
-              }
-              placeholder="Product price"
-              keyboardType="decimal-pad"
-            />
-
-            <Text style={styles.modalLabel}>Supplier</Text>
-            <TextInput
-              style={styles.modalInput}
-              value={formData.supplier}
-              onChangeText={(value) =>
-                setFormData((prev) => ({ ...prev, supplier: value }))
-              }
-              placeholder="Supplier name"
-            />
-
-            <TouchableOpacity
-              style={[styles.modalButton, loading && { opacity: 0.7 }]}
-              onPress={handleSubmit}
-              disabled={loading}
-            >
-              <Text style={styles.modalButtonText}>
-                {loading ? "Updating..." : "Update Product"}
-              </Text>
-            </TouchableOpacity>
-          </ScrollView>
-        </View>
-      </View>
-    </Modal>
-  );
-};
 
 export default function ProductDetailsScreen({
   route,
@@ -243,6 +120,39 @@ export default function ProductDetailsScreen({
     );
   }
 
+  const handleImagePick = async () => {
+    const permissionResult =
+      await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permissionResult.granted) {
+      Alert.alert(
+        "Permission denied",
+        "You need to grant permission to access the media library."
+      );
+      return;
+    }
+
+    const pickerResult = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.5,
+    });
+
+    if (
+      !pickerResult.canceled &&
+      pickerResult.assets &&
+      pickerResult.assets.length > 0
+    ) {
+      const imageUri = pickerResult.assets[0].uri;
+      if (product) {
+        setProduct({
+          ...product,
+          image: imageUri,
+        });
+      }
+    } else {
+      Alert.alert("Error", "No image selected. Please try again.");
+    }
+  };
   return (
     <>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -320,7 +230,10 @@ export default function ProductDetailsScreen({
         visible={isEditModalVisible}
         onClose={() => setIsEditModalVisible(false)}
         product={product}
-        onUpdate={fetchProductDetails}
+        onUpdateSuccess={() => {
+          fetchProductDetails();
+        }}
+        handleImagePick={handleImagePick}
       />
     </>
   );

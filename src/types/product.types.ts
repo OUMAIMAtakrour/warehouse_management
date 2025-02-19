@@ -45,3 +45,19 @@ export interface CreateProductDTO {
   image: string;
   stocks: Stock[];
 }
+
+export interface ProductDetailsProps {
+  route: {
+    params: {
+      productId: string;
+      barcode?: string;
+    };
+  };
+  navigation: any;
+}
+
+export interface InfoItemProps {
+  icon: string;
+  label: string;
+  value: string | number;
+}
